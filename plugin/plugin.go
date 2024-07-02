@@ -10,7 +10,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log/slog"
+	"log"
 )
 
 type GooglePlugin struct {
