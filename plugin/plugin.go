@@ -24,9 +24,9 @@ var (
 
 var curLog *os.File
 
-func writeLog(string message) {
+func writeLog(message string) {
     if curLog == nil {
-	curLog, err =  os.OpenFile("/tmp/boundary-plugin-google.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	curLog, err :=  os.OpenFile("/tmp/boundary-plugin-google.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
         	log.Fatal(err)
     	}
