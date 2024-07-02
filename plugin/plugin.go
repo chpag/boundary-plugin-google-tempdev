@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+	"os"
 )
 
 type GooglePlugin struct {
@@ -19,8 +20,9 @@ type GooglePlugin struct {
 
 var (
 	_ pb.HostPluginServiceServer = (*GooglePlugin)(nil)
-	curLog
 )
+
+var curLog *os.File
 
 func writeLog(string message) {
     if curLog == nil {
