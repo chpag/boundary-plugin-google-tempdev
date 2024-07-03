@@ -98,7 +98,7 @@ func instanceToHost(instance *computepb.Instance,setId string) (*pb.ListHostsRes
 
 	result.ExternalId = instance.GetSelfLink()
 	result.ExternalName = instance.GetName()
-	result.SetIds = setId
+	result.SetIds = [setId]
 
 	// Now go through all of the interfaces and log the IP address of
 	// every interface.
