@@ -51,7 +51,7 @@ func (p *GooglePlugin) OnCreateCatalog(_ context.Context, req *pb.OnCreateCatalo
 	}
 
 	if _, err := getCatalogAttributes(attrs); err != nil {
-		writeLog("ERROR: OnCreateCatalog: " + err )
+		writeLog("ERROR: OnCreateCatalog: Unknown getCatalogAttributes(attrs)")
 		return nil, err
 	}
 
@@ -67,7 +67,7 @@ func (p *GooglePlugin) OnUpdateCatalog(_ context.Context, req *pb.OnUpdateCatalo
   writeLog("INFO: OnUpdateCatalog: Starting")
 	currentCatalog := req.GetCurrentCatalog()
 	if currentCatalog == nil {
-		writeLog("INFO: OnUpdateCatalog: " + status.Error(codes.FailedPrecondition, "current catalog is nil"))
+		writeLog("INFO: OnUpdateCatalog: FailedPrecondition, current catalog is nil")
 		return nil, status.Error(codes.FailedPrecondition, "current catalog is nil")
 	}
 
@@ -83,18 +83,18 @@ func (p *GooglePlugin) OnDeleteCatalog(ctx context.Context, req *pb.OnDeleteCata
     writeLog("INFO: OnDeleteCatalog: Starting")
 	catalog := req.GetCatalog()
 	if catalog == nil {
-		writeLog("INFO: OnDeleteCatalog: " + status.Error(codes.InvalidArgument, "new catalog is nil"))
+		writeLog("INFO: OnDeleteCatalog: InvalidArgument, new catalog is nil")
 		return nil, status.Error(codes.InvalidArgument, "new catalog is nil")
 	}
 
 	attrs := catalog.GetAttributes()
 	if attrs == nil {
-		writeLog("ERROR: OnDeleteCatalog: " + status.Error(codes.InvalidArgument, "new catalog missing attributes"))
+		writeLog("ERROR: OnDeleteCatalog: InvalidArgument, new catalog missing attributes")
 		return nil, status.Error(codes.InvalidArgument, "new catalog missing attributes")
 	}
 
 	if _, err := getCatalogAttributes(attrs); err != nil {
-		writeLog("ERROR: OnDeleteCatalog: " + err)
+		writeLog("ERROR: OnDeleteCatalog: Unknown getCatalogAttributes(attrs)")
 		return nil, err
 	}
 
@@ -105,7 +105,7 @@ func (p *GooglePlugin) OnDeleteCatalog(ctx context.Context, req *pb.OnDeleteCata
 func (p *GooglePlugin) OnCreateSet(_ context.Context, req *pb.OnCreateSetRequest) (*pb.OnCreateSetResponse, error) {
     writeLog("INFO: OnCreateSet: Starting")
 	if err := validateSet(req.GetSet()); err != nil {
-		writeLog("ERROR: OnCreateSet: " + err)
+		writeLog("ERROR: OnCreateSet: Unknown validateSet")
 		return nil, err
 	}
 	writeLog("INFO: OnCreateSet: Ending" )
@@ -115,7 +115,7 @@ func (p *GooglePlugin) OnCreateSet(_ context.Context, req *pb.OnCreateSetRequest
 func (p *GooglePlugin) OnUpdateSet(_ context.Context, req *pb.OnUpdateSetRequest) (*pb.OnUpdateSetResponse, error) {
     writeLog("INFO: OnUpdateSet: Starting")
 	if err := validateSet(req.GetNewSet()); err != nil {
-		writeLog("ERROR: OnUpdateSet: " + err)
+		writeLog("ERROR: OnUpdateSet: Unknown validateSet")
 		return nil, err
 	}
 	writeLog("INFO: OnUpdateSet: Ending")
@@ -132,56 +132,56 @@ func (p *GooglePlugin) ListHosts(ctx context.Context, req *pb.ListHostsRequest) 
     writeLog("INFO: ListHosts: Starting")
 	catalog := req.GetCatalog()
 	if catalog == nil {
-		writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "catalog is nil"))
+		writeLog("ERROR: ListHosts: InvalidArgument, catalog is nil")
 		return nil, status.Error(codes.InvalidArgument, "catalog is nil")
 	}
 
 	catalogAttrsRaw := catalog.GetAttributes()
 	if catalogAttrsRaw == nil {
-		writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "catalog missing attributes"))
+		writeLog("ERROR: ListHosts: InvalidArgument, catalog missing attributes")
 		return nil, status.Error(codes.InvalidArgument, "catalog missing attributes")
 	}
 
 	catalogAttributes, err := getCatalogAttributes(catalogAttrsRaw)
 	if err != nil {
-		writeLog("ERROR: ListHosts: " + err)
+		writeLog("ERROR: ListHosts: Unknown getCatalogAttributes(catalogAttrsRaw)")
 		return nil, err
 	}
 
 	sets := req.GetSets()
 	if sets == nil {
-		writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "sets is nil"))
+		writeLog("ERROR: ListHosts: InvalidArgument, sets is nil")
 		return nil, status.Error(codes.InvalidArgument, "sets is nil")
 	}
 
 	hosts := []*pb.ListHostsResponseHost{}
 	for _, set := range sets {
 		if set.GetId() == "" {
-			writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "set missing id"))
+			writeLog("ERROR: ListHosts: InvalidArgument, set missing id")
 			return nil, status.Error(codes.InvalidArgument, "set missing id")
 		}
 
 		if set.GetAttributes() == nil {
-			writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "set missing attributes"))
+			writeLog("ERROR: ListHosts: InvalidArgument, set missing attributes")
 			return nil, status.Error(codes.InvalidArgument, "set missing attributes")
 		}
 		setAttrs, err := getSetAttributes(set.GetAttributes())
 		if err != nil {
-			writeLog("ERROR: ListHosts: " + err)
+			writeLog("ERROR: ListHosts: Unknown, getSetAttributes(set.GetAttributes")
 			return nil, err
 		}
 
 		if setAttrs.InstanceGroup != "" {
 			hosts, err = getInstancesForInstanceGroup(ctx, set.GetId(), setAttrs, catalogAttributes)
 			if err != nil {
-				writeLog("ERROR: ListHosts: " + err)
+				writeLog("ERROR: ListHosts: Unknown, getInstancesForInstanceGroup")
 				return nil, err
 			}
 		} else {
 			request := buildListInstancesRequest(setAttrs, catalogAttributes)
 			hosts, err = getInstances(ctx, set.GetId(), request)
 			if err != nil {
-				writeLog("ERROR: ListHosts: " + err)
+				writeLog("ERROR: ListHosts: Unknown, get Instances")
 				return nil, err
 			}
 		}
