@@ -37,21 +37,25 @@ func writeLog(message string) {
 }
 
 func (p *GooglePlugin) OnCreateCatalog(_ context.Context, req *pb.OnCreateCatalogRequest) (*pb.OnCreateCatalogResponse, error) {
-    writeLog("DEBUG GCP Disco:starting OnCreateCatalog")
+    writeLog("INFO: OnCreateCatalog: Starting")
 	catalog := req.GetCatalog()
 	if catalog == nil {
+		writeLog("ERROR: OnCreateCatalog: " + status.Error(codes.InvalidArgument, "catalog is nil"))
 		return nil, status.Error(codes.InvalidArgument, "catalog is nil")
 	}
 
 	attrs := catalog.GetAttributes()
 	if attrs == nil {
+		writeLog("ERROR: OnCreateCatalog: " + status.Error(codes.InvalidArgument, "attributes are required"))
 		return nil, status.Error(codes.InvalidArgument, "attributes are required")
 	}
 
 	if _, err := getCatalogAttributes(attrs); err != nil {
+		writeLog("ERROR: OnCreateCatalog: " + err )
 		return nil, err
 	}
 
+	writeLog("INFO: OnCreateCatalog: Ending" )
 	return &pb.OnCreateCatalogResponse{
 		Persisted: &pb.HostCatalogPersisted{
 			Secrets: nil,
@@ -60,12 +64,14 @@ func (p *GooglePlugin) OnCreateCatalog(_ context.Context, req *pb.OnCreateCatalo
 }
 
 func (p *GooglePlugin) OnUpdateCatalog(_ context.Context, req *pb.OnUpdateCatalogRequest) (*pb.OnUpdateCatalogResponse, error) {
-  writeLog("DEBUG GCP Disco:starting OnUpdateCatalog")
+  writeLog("INFO: OnUpdateCatalog: Starting")
 	currentCatalog := req.GetCurrentCatalog()
 	if currentCatalog == nil {
+		writeLog("INFO: OnUpdateCatalog: " + status.Error(codes.FailedPrecondition, "current catalog is nil"))
 		return nil, status.Error(codes.FailedPrecondition, "current catalog is nil")
 	}
 
+	writeLog("INFO: OnUpdateCatalog: Ending" )
 	return &pb.OnUpdateCatalogResponse{
 		Persisted: &pb.HostCatalogPersisted{
 			Secrets: nil,
@@ -74,96 +80,113 @@ func (p *GooglePlugin) OnUpdateCatalog(_ context.Context, req *pb.OnUpdateCatalo
 }
 
 func (p *GooglePlugin) OnDeleteCatalog(ctx context.Context, req *pb.OnDeleteCatalogRequest) (*pb.OnDeleteCatalogResponse, error) {
-    writeLog("DEBUG GCP Disco:starting OnDeleteCatalog")
+    writeLog("INFO: OnDeleteCatalog: Starting")
 	catalog := req.GetCatalog()
 	if catalog == nil {
+		writeLog("INFO: OnDeleteCatalog: " + status.Error(codes.InvalidArgument, "new catalog is nil"))
 		return nil, status.Error(codes.InvalidArgument, "new catalog is nil")
 	}
 
 	attrs := catalog.GetAttributes()
 	if attrs == nil {
+		writeLog("ERROR: OnDeleteCatalog: " + status.Error(codes.InvalidArgument, "new catalog missing attributes")
 		return nil, status.Error(codes.InvalidArgument, "new catalog missing attributes")
 	}
 
 	if _, err := getCatalogAttributes(attrs); err != nil {
+		writeLog("ERROR: OnDeleteCatalog: " + err)
 		return nil, err
 	}
 
+	writeLog("INFO: OnDeleteCatalog: Ending" )
 	return &pb.OnDeleteCatalogResponse{}, nil
 }
 
 func (p *GooglePlugin) OnCreateSet(_ context.Context, req *pb.OnCreateSetRequest) (*pb.OnCreateSetResponse, error) {
-    writeLog("DEBUG GCP Disco:starting OnCreateSet")
+    writeLog("INFO: OnCreateSet: Starting")
 	if err := validateSet(req.GetSet()); err != nil {
+		writeLog("ERROR: OnCreateSet: " + err)
 		return nil, err
 	}
+	writeLog("INFO: OnCreateSet: Ending" )
 	return &pb.OnCreateSetResponse{}, nil
 }
 
 func (p *GooglePlugin) OnUpdateSet(_ context.Context, req *pb.OnUpdateSetRequest) (*pb.OnUpdateSetResponse, error) {
-    writeLog("DEBUG GCP Disco:starting OnUpdateSet")
+    writeLog("INFO: OnUpdateSet: Starting")
 	if err := validateSet(req.GetNewSet()); err != nil {
+		writeLog("ERROR: OnUpdateSet: " + err)
 		return nil, err
 	}
+	writeLog("INFO: OnUpdateSet: Ending")
 	return &pb.OnUpdateSetResponse{}, nil
 }
 
 // OnDeleteSet is called when a dynamic host set is deleted.
 func (p *GooglePlugin) OnDeleteSet(ctx context.Context, req *pb.OnDeleteSetRequest) (*pb.OnDeleteSetResponse, error) {
-    writeLog("DEBUG GCP Disco:starting OnDeleteSet")
+    writeLog("INFO: OnDeleteSet: Starting/Ending")
 	return &pb.OnDeleteSetResponse{}, nil
 }
 
 func (p *GooglePlugin) ListHosts(ctx context.Context, req *pb.ListHostsRequest) (*pb.ListHostsResponse, error) {
-    writeLog("DEBUG GCP Disco:starting ListHosts")
+    writeLog("INFO: ListHosts: Starting")
 	catalog := req.GetCatalog()
 	if catalog == nil {
+		writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "catalog is nil"))
 		return nil, status.Error(codes.InvalidArgument, "catalog is nil")
 	}
 
 	catalogAttrsRaw := catalog.GetAttributes()
 	if catalogAttrsRaw == nil {
+		writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "catalog missing attributes"))
 		return nil, status.Error(codes.InvalidArgument, "catalog missing attributes")
 	}
 
 	catalogAttributes, err := getCatalogAttributes(catalogAttrsRaw)
 	if err != nil {
+		writeLog("ERROR: ListHosts: " + err)
 		return nil, err
 	}
 
 	sets := req.GetSets()
 	if sets == nil {
+		writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "sets is nil"))
 		return nil, status.Error(codes.InvalidArgument, "sets is nil")
 	}
 
 	hosts := []*pb.ListHostsResponseHost{}
 	for _, set := range sets {
 		if set.GetId() == "" {
+			writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "set missing id"))
 			return nil, status.Error(codes.InvalidArgument, "set missing id")
 		}
 
 		if set.GetAttributes() == nil {
+			writeLog("ERROR: ListHosts: " + status.Error(codes.InvalidArgument, "set missing attributes"))
 			return nil, status.Error(codes.InvalidArgument, "set missing attributes")
 		}
 		setAttrs, err := getSetAttributes(set.GetAttributes())
 		if err != nil {
+			writeLog("ERROR: ListHosts: " + err)
 			return nil, err
 		}
 
 		if setAttrs.InstanceGroup != "" {
 			hosts, err = getInstancesForInstanceGroup(ctx, set.GetId(), setAttrs, catalogAttributes)
 			if err != nil {
+				writeLog("ERROR: ListHosts: " + err)
 				return nil, err
 			}
 		} else {
 			request := buildListInstancesRequest(setAttrs, catalogAttributes)
 			hosts, err = getInstances(ctx, set.GetId(), request)
 			if err != nil {
+				writeLog("ERROR: ListHosts: " + err)
 				return nil, err
 			}
 		}
 	}
-
+	writeLog("INFO: ListHosts: Ending")
 	return &pb.ListHostsResponse{
 		Hosts: hosts,
 	}, nil
