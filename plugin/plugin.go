@@ -40,13 +40,13 @@ func (p *GooglePlugin) OnCreateCatalog(_ context.Context, req *pb.OnCreateCatalo
     writeLog("INFO: OnCreateCatalog: Starting")
 	catalog := req.GetCatalog()
 	if catalog == nil {
-		writeLog("ERROR: OnCreateCatalog: " + status.Error(codes.InvalidArgument, "catalog is nil"))
+		writeLog("ERROR: OnCreateCatalog: InvalidArgument, catalog is nil")
 		return nil, status.Error(codes.InvalidArgument, "catalog is nil")
 	}
 
 	attrs := catalog.GetAttributes()
 	if attrs == nil {
-		writeLog("ERROR: OnCreateCatalog: " + status.Error(codes.InvalidArgument, "attributes are required"))
+		writeLog("ERROR: OnCreateCatalog: InvalidArgument, attributes are required")
 		return nil, status.Error(codes.InvalidArgument, "attributes are required")
 	}
 
