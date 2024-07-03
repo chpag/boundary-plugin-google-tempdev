@@ -89,7 +89,7 @@ func (p *GooglePlugin) OnDeleteCatalog(ctx context.Context, req *pb.OnDeleteCata
 
 	attrs := catalog.GetAttributes()
 	if attrs == nil {
-		writeLog("ERROR: OnDeleteCatalog: " + status.Error(codes.InvalidArgument, "new catalog missing attributes")
+		writeLog("ERROR: OnDeleteCatalog: " + status.Error(codes.InvalidArgument, "new catalog missing attributes"))
 		return nil, status.Error(codes.InvalidArgument, "new catalog missing attributes")
 	}
 
